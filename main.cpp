@@ -2,6 +2,7 @@
 
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/point_cloud.h>
+#include <pcl/io/ply_io.h>
 
 #include <iostream>
 #include <chrono>
@@ -9,7 +10,7 @@
 
 int main() {
     //pcl::visualization::CloudViewer viewer("justin is retarded");
-    cv::VideoCapture capWebcam(1);   // declare a VideoCapture object to associate webcam, 0 means use 1st (default) webcam
+    cv::VideoCapture capWebcam(0);   // declare a VideoCapture object to associate webcam, 0 means use 1st (default) webcam
 
     if (!capWebcam.isOpened())  //  To check if object was associated to webcam successfully
     {
@@ -56,22 +57,21 @@ int main() {
         stereo_camera.getDisparityVisualisation(disparityVis, vis_mult);
         stereo_camera.undistorted(undistort_L, undistort_R);
 
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr pointcloud(new   pcl::PointCloud<pcl::PointXYZRGB>());
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr pointcloud(new pcl::PointCloud<pcl::PointXYZRGB>());
 
         stereo_camera.getPointCloud(xyz);
         pointcloud->width = static_cast<uint32_t>(dmap.cols);
         pointcloud->height = static_cast<uint32_t>(dmap.rows);
         pointcloud->is_dense = false;
-        pcl::PointXYZRGB point;
         for (int i = 0; i < dmap.rows; ++i) {
             auto* rgb_ptr = undistort_L.ptr<uchar>(i);
             auto* dmap_ptr = dmap.ptr<uchar>(i);
             auto* xyz_ptr = xyz.ptr<double>(i);
 
-            for (int j = 0; j < dmap.cols; ++j)
-            {
+            for (int j = 0; j < dmap.cols; ++j) {
+                pcl::PointXYZRGB point;
                 uchar d = dmap_ptr[j];
-                if (d == 0) continue;
+                //if (d == 0) continue;
                 cv::Point3f p = xyz.at<cv::Point3f>(i, j);
 
                 point.z = p.z;   // I have also tried p.z/16
@@ -102,6 +102,11 @@ int main() {
         cv::imshow("imgUndistortL", undistort_L);
         cv::imshow("imgUndistortR", undistort_R);
         cv::imshow("disparityVis", disparityVis);
+
+        std::string writePath = "../cloud.ply";
+        pcl::io::savePLYFileBinary(writePath, *pointcloud);
+
+        break;
 
         charCheckForEscKey = cv::waitKey(50);        // delay and get key press
     }

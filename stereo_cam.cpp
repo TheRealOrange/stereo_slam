@@ -88,6 +88,7 @@ void StereoCam::process(cv::Mat img_L, cv::Mat img_R, cv::Mat& disparity_map) {
 
 void StereoCam::getDisparityVisualisation(cv::Mat &disparity_vis, double vis_mult) {
     cv::ximgproc::getDisparityVis(this->imgDisparity, this->disparityVis, vis_mult);
+    disparity_vis = this->disparityVis.clone();
 }
 
 void StereoCam::undistorted(cv::Mat& undistort_L_crop, cv::Mat& undistort_R_crop) {
