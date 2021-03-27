@@ -59,7 +59,7 @@ int main() {
 
         stereo_camera.process(img_L, img_R, dmap);
         stereo_camera.getDisparityVisualisation(disparityVis, vis_mult);
-        stereo_camera.undistorted(undistort_L, undistort_R);
+        stereo_camera.getUndistortedImages(undistort_L, undistort_R);
 
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr pointcloud(new pcl::PointCloud<pcl::PointXYZRGB>());
 
@@ -77,6 +77,7 @@ int main() {
                 uchar d = dmap_ptr[j];
                 point.z = 0; point.x = 0; point.y = 0; point.b = 0; point.g = 0; point.r = 0;
                 if (d == 0) { pointcloud->points.push_back(point); continue; }
+                //std::cout << d << std:endl;
                 cv::Point3f p = xyz.at<cv::Point3f>(i, j);
 
                 point.z = p.z;   // I have also tried p.z/16
@@ -96,7 +97,7 @@ int main() {
         std::cout << "total time: " << duration.count() << "\r" << std::flush;
 
         cv::rectangle(undistort_L, stereo_camera.valid_roi_L, cv::Scalar(0,255,0), 1, 8, 0);
-        cv::rectangle(undistort_L, stereo_camera.valid_roi_R, cv::Scalar(0,255,0), 1, 8, 0);
+        cv::rectangle(undistort_R, stereo_camera.valid_roi_R, cv::Scalar(0,255,0), 1, 8, 0);
 
         cv::namedWindow("imgOriginal", cv::WINDOW_NORMAL);
         cv::namedWindow("imgUndistortL", cv::WINDOW_NORMAL);
