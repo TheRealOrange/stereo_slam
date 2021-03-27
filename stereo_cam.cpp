@@ -54,6 +54,7 @@ void StereoCam::calculateQ() {
         this->right_matcher = cv::ximgproc::createRightMatcher(this->left_matcher);
         cv::initUndistortRectifyMap(this->K1, this->D1, this->R, this->P1, this->imageSize, CV_16SC2, this->map1_L, this->map2_L);
         cv::initUndistortRectifyMap(this->K2, this->D2, this->R, this->P2, this->imageSize, CV_16SC2, this->map1_R, this->map2_R);
+        cv::getValidDisparityROI(valid_roi_L, valid_roi_R, left_matcher->getMinDisparity(), left_matcher->getNumDisparities(), left_matcher->getSpeckleWindowSize());
         this->Q_calculated = true;
     }
 }
@@ -85,7 +86,8 @@ void StereoCam::process(cv::Mat img_L, cv::Mat img_R, cv::Mat& disparity_map) {
     this->wls_filter->filter(this->imgDisparity_L, this->undistort_L, this->imgDisparity, this->imgDisparity_R);
 
     this->imgDisparity.convertTo(this->dmap, CV_32F, 1.0/16.0, 0.0);
-    disparity_map = dmap.clone();
+    this->dmap_valid = dmap(this->valid_disp_roi).clone();
+    disparity_map = dmap_valid.clone();
 }
 
 void StereoCam::getDisparityVisualisation(cv::Mat &disparity_vis, double vis_mult) {
@@ -93,12 +95,16 @@ void StereoCam::getDisparityVisualisation(cv::Mat &disparity_vis, double vis_mul
     disparity_vis = this->disparityVis.clone();
 }
 
-void StereoCam::undistorted(cv::Mat& undistort_L_crop, cv::Mat& undistort_R_crop) {
+void StereoCam::getUndistortedImages(cv::Mat& undistort_L_crop, cv::Mat& undistort_R_crop) {
     undistort_L_crop = this->undistort_L.clone();
     undistort_R_crop = this->undistort_R.clone();
 }
 
 void StereoCam::getPointCloud(cv::Mat &xyz) {
     reprojectImageTo3D(this->dmap, xyz, this->Q, false, CV_32F);
+}
+
+void StereoCam::getValidImage(cv::Mat &valid_undistort) {
+    valid_undistort = this->undistort_L(valid_disp_roi).clone();
 }
 
