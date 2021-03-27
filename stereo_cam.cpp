@@ -52,6 +52,8 @@ void StereoCam::calculateQ() {
         stereoRectify(this->K1, this->D1, this->K2, this->D2, this->imageSize, this->R, this->T, this->R1, this->R2, this->P1, this->P2, this->Q, cv::CALIB_SAME_FOCAL_LENGTH, -1, cv::Size(), &this->valid_roi_L, &this->valid_roi_R);
         this->left_matcher->setROI1(this->valid_roi_L); this->left_matcher->setROI2(this->valid_roi_R);
         this->right_matcher = cv::ximgproc::createRightMatcher(this->left_matcher);
+        cv::initUndistortRectifyMap(this->K1, this->D1, this->R, this->P1, this->imageSize, CV_16SC2, this->map1_L, this->map2_L);
+        cv::initUndistortRectifyMap(this->K2, this->D2, this->R, this->P2, this->imageSize, CV_16SC2, this->map1_R, this->map2_R);
         this->Q_calculated = true;
     }
 }
@@ -65,8 +67,8 @@ void StereoCam::process(cv::Mat img_L, cv::Mat img_R, cv::Mat& disparity_map) {
         calculateQ();
     }
 
-    cv::undistort(img_L, this->undistort_L, this->K1, this->D1);
-    cv::undistort(img_R, this->undistort_R, this->K2, this->D2);
+    cv::remap(img_L, this->undistort_L, this->map1_L, this->map2_L, cv::INTER_LINEAR);
+    cv::remap(img_R, this->undistort_R, this->map1_R, this->map2_R, cv::INTER_LINEAR);
 
     cv::resize(this->undistort_L, this->imgL_downsample, cv::Size(), this->downsample, this->downsample, cv::INTER_LINEAR_EXACT);
     cv::resize(this->undistort_R, this->imgR_downsample, cv::Size(), this->downsample, this->downsample, cv::INTER_LINEAR_EXACT);

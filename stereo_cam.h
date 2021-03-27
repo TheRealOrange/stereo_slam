@@ -35,6 +35,7 @@ public:
     cv::Mat K1, D1, R1, P1;
     cv::Mat K2, D2, R2, P2;
     cv::Mat Q, R;
+    cv::Mat map1_L, map2_L, map1_R, map2_R;
     cv::Vec3d T;
     cv::Rect valid_roi_L, valid_roi_R;
 

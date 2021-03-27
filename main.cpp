@@ -9,8 +9,12 @@
 #include <pcl/point_types.h>
 
 int main() {
-    //pcl::visualization::CloudViewer viewer("justin is retarded");
+    pcl::visualization::CloudViewer viewer("justin is retarded");
     cv::VideoCapture capWebcam(0);   // declare a VideoCapture object to associate webcam, 0 means use 1st (default) webcam
+    capWebcam.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
+    capWebcam.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    //capWebcam.set(cv::CAP_PROP_FPS, 10.0);
+    capWebcam.set(cv::CAP_PROP_EXPOSURE, -8);
 
     if (!capWebcam.isOpened())  //  To check if object was associated to webcam successfully
     {
@@ -21,7 +25,7 @@ int main() {
     double vis_mult = 1.0;
 
     StereoCam stereo_camera("../left.yml", "../right.yml", "../bleh.yml",
-                            300, 15, 8000.0, 1.5, 0.8);
+                            150, 10, 8000.0, 1.5, 0.8);
 
 
     std::cout << "left_camera" << std::endl;
@@ -71,7 +75,8 @@ int main() {
             for (int j = 0; j < dmap.cols; ++j) {
                 pcl::PointXYZRGB point;
                 uchar d = dmap_ptr[j];
-                //if (d == 0) continue;
+                point.z = 0; point.x = 0; point.y = 0; point.b = 0; point.g = 0; point.r = 0;
+                if (d == 0) { pointcloud->points.push_back(point); continue; }
                 cv::Point3f p = xyz.at<cv::Point3f>(i, j);
 
                 point.z = p.z;   // I have also tried p.z/16
@@ -106,7 +111,7 @@ int main() {
         std::string writePath = "../cloud.ply";
         pcl::io::savePLYFileBinary(writePath, *pointcloud);
 
-        break;
+        //break;
 
         charCheckForEscKey = cv::waitKey(50);        // delay and get key press
     }
