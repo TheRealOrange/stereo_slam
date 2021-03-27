@@ -16,7 +16,7 @@ include_directories( ${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} )
 link_directories( ${PCL_LIBRARY_DIRS} )
 add_definitions( ${PCL_DEFINITIONS} )
 
-add_executable(stereo_slam main.cpp)
+add_executable(stereo_slam main.cpp stereo_cam.h stereo_cam.cpp)
 
 # tell it to link the executable target against OpenCV
 target_link_libraries(stereo_slam ${OpenCV_LIBS} ${PCL_LIBRARIES})
