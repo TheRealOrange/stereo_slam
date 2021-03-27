@@ -9,7 +9,7 @@
 #include <pcl/point_types.h>
 
 int main() {
-    //pcl::visualization::CloudViewer viewer("justin is retarded");
+    pcl::visualization::CloudViewer viewer("justin is retarded");
     cv::VideoCapture capWebcam(1);   // declare a VideoCapture object to associate webcam, 0 means use 1st (default) webcam
     capWebcam.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
     capWebcam.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
@@ -77,8 +77,8 @@ int main() {
                 pcl::PointXYZRGB point;
                 uchar d = dmap_ptr[j];
                 point.z = 0; point.x = 0; point.y = 0; point.b = 0; point.g = 0; point.r = 0;
-                if (d == 0) { pointcloud->points.push_back(point); continue; }
-                //std::cout << d << std:endl;
+                if (d <= 10) { pointcloud->points.push_back(point); continue; }
+                //std::cout << (int)d << std::endl;
                 cv::Point3f p = xyz.at<cv::Point3f>(i, j);
 
                 point.z = p.z;   // I have also tried p.z/16
@@ -91,7 +91,7 @@ int main() {
                 pointcloud->points.push_back(point);
             }
         }
-        //viewer.showCloud(pointcloud);
+        viewer.showCloud(pointcloud);
 
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);

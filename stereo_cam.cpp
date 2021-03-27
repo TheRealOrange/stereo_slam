@@ -65,7 +65,6 @@ void StereoCam::process(cv::Mat img_L, cv::Mat img_R, cv::Mat& disparity_map) {
     if (inputSize != this->imageSize) {
         this->Q_calculated = false;
         this->imageSize = inputSize;
-        std::cout << "ree" << std::endl;
         calculateQ();
     }
 
