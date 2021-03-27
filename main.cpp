@@ -9,15 +9,15 @@
 #include <pcl/point_types.h>
 
 int main() {
-    pcl::visualization::CloudViewer viewer("justin is retarded");
-    cv::VideoCapture capWebcam(0);   // declare a VideoCapture object to associate webcam, 0 means use 1st (default) webcam
+    //pcl::visualization::CloudViewer viewer("justin is retarded");
+    cv::VideoCapture capWebcam(1);   // declare a VideoCapture object to associate webcam, 0 means use 1st (default) webcam
     capWebcam.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
     capWebcam.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
     //capWebcam.set(cv::CAP_PROP_FPS, 10.0);
-    capWebcam.set(cv::CAP_PROP_EXPOSURE, -8);
+    //capWebcam.set(cv::CAP_PROP_EXPOSURE, -8);
 
-    if (!capWebcam.isOpened())  //  To check if object was associated to webcam successfully
-    {
+    if (!capWebcam.isOpened()) {
+        // To check if object was associated to webcam successfully
         std::cout << "error: Webcam connect unsuccessful\n"; // if not then print error message
         return(0);            // and exit program
     }
@@ -25,7 +25,7 @@ int main() {
     double vis_mult = 1.0;
 
     StereoCam stereo_camera("../left.yml", "../right.yml", "../bleh.yml",
-                            150, 10, 8000.0, 1.5, 0.8);
+                            150, 13, 8000.0, 1.5, 0.8);
 
 
     std::cout << "left_camera" << std::endl;
@@ -35,7 +35,7 @@ int main() {
     std::cout << "K2: " << stereo_camera.K1 << std::endl;
     std::cout << "D2: " << stereo_camera.D1 << std::endl << std::endl;
 
-    cv::Mat img_input, img_L, img_R, undistort_L, undistort_R;
+    cv::Mat img_input, img_L, img_R, undistort_L, undistort_R, undistort_valid;
     cv::Mat disparityVis;
 
     cv::Mat dmap, xyz;
@@ -60,6 +60,7 @@ int main() {
         stereo_camera.process(img_L, img_R, dmap);
         stereo_camera.getDisparityVisualisation(disparityVis, vis_mult);
         stereo_camera.getUndistortedImages(undistort_L, undistort_R);
+        stereo_camera.getValidImage(undistort_valid);
 
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr pointcloud(new pcl::PointCloud<pcl::PointXYZRGB>());
 
@@ -68,7 +69,7 @@ int main() {
         pointcloud->height = static_cast<uint32_t>(dmap.rows);
         pointcloud->is_dense = false;
         for (int i = 0; i < dmap.rows; ++i) {
-            auto* rgb_ptr = undistort_L.ptr<uchar>(i);
+            auto* rgb_ptr = undistort_valid.ptr<uchar>(i);
             auto* dmap_ptr = dmap.ptr<uchar>(i);
             auto* xyz_ptr = xyz.ptr<double>(i);
 
@@ -96,8 +97,8 @@ int main() {
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
         std::cout << "total time: " << duration.count() << "\r" << std::flush;
 
-        cv::rectangle(undistort_L, stereo_camera.valid_roi_L, cv::Scalar(0,255,0), 1, 8, 0);
-        cv::rectangle(undistort_R, stereo_camera.valid_roi_R, cv::Scalar(0,255,0), 1, 8, 0);
+        cv::rectangle(undistort_L, stereo_camera.valid_roi_L, cv::Scalar(0,255,0), 2, 8, 0);
+        cv::rectangle(undistort_R, stereo_camera.valid_roi_R, cv::Scalar(0,255,0), 2, 8, 0);
 
         cv::namedWindow("imgOriginal", cv::WINDOW_NORMAL);
         cv::namedWindow("imgUndistortL", cv::WINDOW_NORMAL);
@@ -109,8 +110,8 @@ int main() {
         cv::imshow("imgUndistortR", undistort_R);
         cv::imshow("disparityVis", disparityVis);
 
-        std::string writePath = "../cloud.ply";
-        pcl::io::savePLYFileBinary(writePath, *pointcloud);
+        //std::string writePath = "../cloud.ply";
+        //pcl::io::savePLYFileBinary(writePath, *pointcloud);
 
         //break;
 

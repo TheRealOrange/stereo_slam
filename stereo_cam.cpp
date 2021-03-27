@@ -52,9 +52,9 @@ void StereoCam::calculateQ() {
         stereoRectify(this->K1, this->D1, this->K2, this->D2, this->imageSize, this->R, this->T, this->R1, this->R2, this->P1, this->P2, this->Q, cv::CALIB_SAME_FOCAL_LENGTH, -1, cv::Size(), &this->valid_roi_L, &this->valid_roi_R);
         this->left_matcher->setROI1(this->valid_roi_L); this->left_matcher->setROI2(this->valid_roi_R);
         this->right_matcher = cv::ximgproc::createRightMatcher(this->left_matcher);
-        cv::initUndistortRectifyMap(this->K1, this->D1, this->R, this->P1, this->imageSize, CV_16SC2, this->map1_L, this->map2_L);
-        cv::initUndistortRectifyMap(this->K2, this->D2, this->R, this->P2, this->imageSize, CV_16SC2, this->map1_R, this->map2_R);
-        cv::getValidDisparityROI(valid_roi_L, valid_roi_R, left_matcher->getMinDisparity(), left_matcher->getNumDisparities(), left_matcher->getSpeckleWindowSize());
+        cv::initUndistortRectifyMap(this->K1, this->D1, this->R1, this->P1, this->imageSize, CV_32FC1, this->map1_L, this->map2_L);
+        cv::initUndistortRectifyMap(this->K2, this->D2, this->R2, this->P2, this->imageSize, CV_32FC1, this->map1_R, this->map2_R);
+        this->valid_disp_roi = cv::getValidDisparityROI(this->valid_roi_L, this->valid_roi_R, left_matcher->getMinDisparity(), left_matcher->getNumDisparities(), left_matcher->getSpeckleWindowSize());
         this->Q_calculated = true;
     }
 }
@@ -65,6 +65,7 @@ void StereoCam::process(cv::Mat img_L, cv::Mat img_R, cv::Mat& disparity_map) {
     if (inputSize != this->imageSize) {
         this->Q_calculated = false;
         this->imageSize = inputSize;
+        std::cout << "ree" << std::endl;
         calculateQ();
     }
 
@@ -87,12 +88,12 @@ void StereoCam::process(cv::Mat img_L, cv::Mat img_R, cv::Mat& disparity_map) {
 
     this->imgDisparity.convertTo(this->dmap, CV_32F, 1.0/16.0, 0.0);
     this->dmap_valid = dmap(this->valid_disp_roi).clone();
-    disparity_map = dmap_valid.clone();
+    disparity_map = this->dmap_valid.clone();
 }
 
 void StereoCam::getDisparityVisualisation(cv::Mat &disparity_vis, double vis_mult) {
     cv::ximgproc::getDisparityVis(this->imgDisparity, this->disparityVis, vis_mult);
-    disparity_vis = this->disparityVis.clone();
+    disparity_vis = this->disparityVis(this->valid_disp_roi).clone();
 }
 
 void StereoCam::getUndistortedImages(cv::Mat& undistort_L_crop, cv::Mat& undistort_R_crop) {
@@ -101,10 +102,10 @@ void StereoCam::getUndistortedImages(cv::Mat& undistort_L_crop, cv::Mat& undisto
 }
 
 void StereoCam::getPointCloud(cv::Mat &xyz) {
-    reprojectImageTo3D(this->dmap, xyz, this->Q, false, CV_32F);
+    reprojectImageTo3D(this->dmap_valid, xyz, this->Q, false, CV_32F);
 }
 
 void StereoCam::getValidImage(cv::Mat &valid_undistort) {
-    valid_undistort = this->undistort_L(valid_disp_roi).clone();
+    valid_undistort = this->undistort_L(this->valid_disp_roi).clone();
 }
 

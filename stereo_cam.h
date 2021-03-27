@@ -3,6 +3,7 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/utility.hpp>
 #include <opencv2/ximgproc.hpp>
+#include <iostream>
 
 class StereoCam {
 private:
