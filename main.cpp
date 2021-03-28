@@ -10,7 +10,7 @@
 
 int main() {
     pcl::visualization::CloudViewer viewer("justin is retarded");
-    cv::VideoCapture capWebcam(1);   // declare a VideoCapture object to associate webcam, 0 means use 1st (default) webcam
+    cv::VideoCapture capWebcam(0);   // declare a VideoCapture object to associate webcam, 0 means use 1st (default) webcam
     capWebcam.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
     capWebcam.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
     //capWebcam.set(cv::CAP_PROP_FPS, 10.0);
@@ -23,6 +23,8 @@ int main() {
     }
 
     double vis_mult = 1.0;
+    double f_length = 2.1;
+    double baseline = 120.0;
 
     StereoCam stereo_camera("../left.yml", "../right.yml", "../bleh.yml",
                             150, 13, 8000.0, 1.5, 0.8);
@@ -77,11 +79,11 @@ int main() {
                 pcl::PointXYZRGB point;
                 uchar d = dmap_ptr[j];
                 point.z = 0; point.x = 0; point.y = 0; point.b = 0; point.g = 0; point.r = 0;
-                if (d <= 10) { pointcloud->points.push_back(point); continue; }
+                if (d <= 20) { pointcloud->points.push_back(point); continue; }
                 //std::cout << (int)d << std::endl;
                 cv::Point3f p = xyz.at<cv::Point3f>(i, j);
 
-                point.z = p.z;   // I have also tried p.z/16
+                point.z = (baseline*f_length/p.z)/1000.0;
                 point.x = p.x;
                 point.y = p.y;
 

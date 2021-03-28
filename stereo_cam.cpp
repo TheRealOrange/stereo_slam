@@ -54,7 +54,7 @@ void StereoCam::calculateQ() {
         this->right_matcher = cv::ximgproc::createRightMatcher(this->left_matcher);
         cv::initUndistortRectifyMap(this->K1, this->D1, this->R1, this->P1, this->imageSize, CV_32FC1, this->map1_L, this->map2_L);
         cv::initUndistortRectifyMap(this->K2, this->D2, this->R2, this->P2, this->imageSize, CV_32FC1, this->map1_R, this->map2_R);
-        this->valid_disp_roi = cv::getValidDisparityROI(this->valid_roi_L, this->valid_roi_R, left_matcher->getMinDisparity(), left_matcher->getNumDisparities(), left_matcher->getSpeckleWindowSize());
+        this->valid_disp_roi = cv::getValidDisparityROI(this->valid_roi_L, this->valid_roi_R, left_matcher->getMinDisparity(), left_matcher->getNumDisparities(), left_matcher->getSmallerBlockSize());
         this->Q_calculated = true;
     }
 }
