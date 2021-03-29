@@ -9,8 +9,8 @@
 #include <pcl/point_types.h>
 
 int main() {
-    pcl::visualization::CloudViewer viewer("justin is retarded");
-    cv::VideoCapture capWebcam(0);   // declare a VideoCapture object to associate webcam, 0 means use 1st (default) webcam
+    //pcl::visualization::CloudViewer viewer("justin is retarded");
+    cv::VideoCapture capWebcam(1);   // declare a VideoCapture object to associate webcam, 0 means use 1st (default) webcam
     capWebcam.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
     capWebcam.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
     //capWebcam.set(cv::CAP_PROP_FPS, 10.0);
@@ -34,8 +34,8 @@ int main() {
     std::cout << "K1: " << stereo_camera.K1 << std::endl;
     std::cout << "D1: " << stereo_camera.D1 << std::endl << std::endl;
     std::cout << "right_camera" << std::endl;
-    std::cout << "K2: " << stereo_camera.K1 << std::endl;
-    std::cout << "D2: " << stereo_camera.D1 << std::endl << std::endl;
+    std::cout << "K2: " << stereo_camera.K2 << std::endl;
+    std::cout << "D2: " << stereo_camera.D2 << std::endl << std::endl;
 
     cv::Mat img_input, img_L, img_R, undistort_L, undistort_R, undistort_valid;
     cv::Mat disparityVis;
@@ -70,6 +70,8 @@ int main() {
         pointcloud->width = static_cast<uint32_t>(dmap.cols);
         pointcloud->height = static_cast<uint32_t>(dmap.rows);
         pointcloud->is_dense = false;
+        //std::cout << xyz << std::endl;
+        //std::cout<<stereo_camera.Q<<std::endl;
         for (int i = 0; i < dmap.rows; ++i) {
             auto* rgb_ptr = undistort_valid.ptr<uchar>(i);
             auto* dmap_ptr = dmap.ptr<uchar>(i);
@@ -83,7 +85,7 @@ int main() {
                 //std::cout << (int)d << std::endl;
                 cv::Point3f p = xyz.at<cv::Point3f>(i, j);
 
-                point.z = (baseline*f_length/p.z)/1000.0;
+                point.z = p.z;
                 point.x = p.x;
                 point.y = p.y;
 
@@ -93,7 +95,7 @@ int main() {
                 pointcloud->points.push_back(point);
             }
         }
-        viewer.showCloud(pointcloud);
+        //viewer.showCloud(pointcloud);
 
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
@@ -112,8 +114,8 @@ int main() {
         cv::imshow("imgUndistortR", undistort_R);
         cv::imshow("disparityVis", disparityVis);
 
-        //std::string writePath = "../cloud.ply";
-        //pcl::io::savePLYFileBinary(writePath, *pointcloud);
+        std::string writePath = "../cloud.ply";
+        pcl::io::savePLYFileBinary(writePath, *pointcloud);
 
         //break;
 

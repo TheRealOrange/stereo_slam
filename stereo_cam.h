@@ -20,7 +20,7 @@ private:
 
     cv::Mat imgDisparity;
     cv::Mat dmap, dmap_valid;
-    cv::Size imageSize;
+    cv::Size imageSize, calibSize;
     cv::Mat map1_L, map2_L, map1_R, map2_R;
     bool Q_calculated = false;
 
@@ -34,8 +34,8 @@ public:
     double sigma;
     double downsample;
 
-    cv::Mat K1, D1, R1, P1;
-    cv::Mat K2, D2, R2, P2;
+    cv::Mat K1, D1, R1, P1, K1_optim;
+    cv::Mat K2, D2, R2, P2, K2_optim;
     cv::Mat Q, R;
     cv::Vec3d T;
     cv::Rect valid_roi_L, valid_roi_R, valid_disp_roi;
